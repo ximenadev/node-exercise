@@ -5,6 +5,7 @@ export const getAllTours = (req: Request, res: Response) => {
 };
 
 export const getTour = (req: Request, res: Response) => {
+  //TODO: Implement 404 when the tour you are searching for doesn't exists
   res.status(200).json({ status: 'success', data: { id: req.params.id } });
 };
 
@@ -13,6 +14,7 @@ export const createTour = (req: Request, res: Response) => {
 };
 
 export const updateTour = (req: Request, res: Response) => {
+  //TODO: Implement 404 when the tour you are searching for doesn't exists
   res
     .status(200)
     .json({ status: 'success', data: { id: req.params.id, ...req.body } });
