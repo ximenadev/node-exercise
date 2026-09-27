@@ -2,5 +2,8 @@
   "type": "module",
   "devDependencies": {
     "@types/node": "^26.6.2"
+  },
+  "dependencies": {
+    "slugify": "^1.6.9"
   }
 }

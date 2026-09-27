@@ -1,6 +1,7 @@
 import fs from "fs";
 import http from "http";
 import { replaceTemplate } from "./modules/index.ts";
+import slugify from "slugify";
 
 /**
  ******* File System Module
@@ -49,6 +50,10 @@ const data: string = fs.readFileSync(
   "utf-8",
 );
 const dataObj: Product[] = JSON.parse(data);
+
+// const slugs: string[] = dataObj.map((el) =>
+//   slugify(el.productName, { lower: true }),
+// );
 
 const server: http.Server = http.createServer((req, res) => {
   const { searchParams: query, pathname } = new URL(
