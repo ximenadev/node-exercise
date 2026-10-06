@@ -11,32 +11,35 @@
     "url": "git+https://github.com/ximenadev/node-course.git"
   },
   "type": "module",
-  "main": "app.ts",
+  "main": "server.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "build": "tsup app.ts --format esm --target node20 --out-dir dist",
-    "start": "node dist/app.js",
-    "dev": "tsx watch app.ts"
+    "build": "tsup server.ts --format esm --target node20 --out-dir dist",
+    "start": "node dist/server.js",
+    "dev": "NODE_ENV=development tsx watch server.ts"
   },
   "dependencies": {
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "mongoose": "^9.10.2",
+    "morgan": "^1.12.1"
   },
   "devDependencies": {
     "@types/express": "^5.0.1",
+    "@types/morgan": "^1.9.10",
     "@types/node": "^26.6.2",
-    "@typescript-eslint/eslint-plugin": "^7.18.0",
-    "@typescript-eslint/parser": "^7.18.0",
-    "eslint": "^8.57.1",
+    "@typescript-eslint/eslint-plugin": "^8.71.0",
+    "@typescript-eslint/parser": "^8.71.0",
+    "eslint": "^10.11.0",
     "eslint-config-airbnb-base": "^15.0.0",
-    "eslint-config-prettier": "^9.1.0",
+    "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-import": "^2.31.0",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-prettier": "^5.2.1",
     "prettier": "^3.3.3",
     "tsup": "^8.5.1",
     "tsx": "^4.23.15",
-    "typescript": "^5.7.2"
+    "typescript": "^6.0.3"
   }
 }

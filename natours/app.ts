@@ -1,12 +1,14 @@
 import express from 'express';
+import morgan from 'morgan';
 import routes from './routes';
 
 const app = express();
-const port = 3000;
+
+if (process.env.NODE_ENV === 'development') {
+  app.use(morgan('dev'));
+}
 
 app.use(express.json());
 app.use('/api/v1', routes);
 
-const server = app.listen(port);
-
-export default server;
+export default app;
