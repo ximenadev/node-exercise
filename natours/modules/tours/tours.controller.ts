@@ -13,7 +13,32 @@ export const getAllTours = async (req: Request, res: Response) => {
     );
     const parsedQuery = JSON.parse(queryStr);
 
-    const query = Tour.find(parsedQuery);
+    let query = Tour.find(parsedQuery);
+
+    if (req.query.sort) {
+      const sortBy = (req.query.sort as string).split(',').join(' ');
+      query = query.sort(sortBy);
+    } else {
+      query = query.sort('-createdAt');
+    }
+
+    if (req.query.fields) {
+      const fields = (req.query.fields as string).split(',').join(' ');
+      query = query.select(fields);
+    } else {
+      query = query.select('-__v');
+    }
+
+    const page = parseInt(req.query.page as string, 10) || 1;
+    const limit = parseInt(req.query.limit as string, 10) || 100;
+    const skip = (page - 1) * limit;
+
+    query = query.skip(skip).limit(limit);
+
+    if (req.query.page) {
+      const numTours = await Tour.countDocuments();
+      if (skip >= numTours) throw new Error('This page does not exist');
+    }
 
     const tours = await query;
 
