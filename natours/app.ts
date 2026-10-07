@@ -4,6 +4,9 @@ import routes from './routes';
 
 const app = express();
 
+// Express 5 defaults to 'simple', which doesn't parse price[gte]=500
+app.set('query parser', 'extended');
+
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
