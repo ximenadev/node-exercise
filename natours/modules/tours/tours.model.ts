@@ -1,7 +1,7 @@
 import mongoose, { type HydratedDocument, type Query } from 'mongoose';
 import slugify from 'slugify';
 
-export interface Tour {
+export interface ITour {
   name: string;
   slug?: string;
   duration: number;
@@ -21,7 +21,7 @@ export interface Tour {
   secretTour: boolean;
 }
 
-const tourSchema = new mongoose.Schema<Tour>(
+const tourSchema = new mongoose.Schema<ITour>(
   {
     name: {
       type: String,
@@ -66,7 +66,7 @@ const tourSchema = new mongoose.Schema<Tour>(
       type: Number,
       validate: {
         // On create `this` is the doc; on update it is the Query, so read the price from the update payload
-        validator: function (this: Tour | Query<unknown, Tour>, val: number) {
+        validator: function (this: ITour | Query<unknown, ITour>, val: number) {
           if (this instanceof mongoose.Query) {
             const update = this.getUpdate() as {
               price?: number;
@@ -112,7 +112,7 @@ const tourSchema = new mongoose.Schema<Tour>(
 );
 
 tourSchema.virtual('durationWeeks').get(function (
-  this: HydratedDocument<Tour>,
+  this: HydratedDocument<ITour>,
 ) {
   return this.duration / 7;
 });
@@ -129,7 +129,7 @@ tourSchema.pre('save', function () {
 // QUERY MIDDLEWARE
 tourSchema.pre(
   /^find/,
-  function (this: Query<unknown, Tour> & { start: number }) {
+  function (this: Query<unknown, ITour> & { start: number }) {
     this.find({ secretTour: { $ne: true } });
     this.start = Date.now();
   },
@@ -144,5 +144,5 @@ tourSchema.pre('aggregate', function () {
   this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });
 });
 
-const Tour = mongoose.model<Tour>('Tour', tourSchema);
+const Tour = mongoose.model<ITour>('Tour', tourSchema);
 export default Tour;
