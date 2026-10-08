@@ -1,6 +1,8 @@
 import express from 'express';
 import morgan from 'morgan';
 import routes from './routes';
+import { AppError } from './utils/appError';
+import { globalErrorHandler } from './modules/errors/error.controller';
 
 const app = express();
 
@@ -20,5 +22,11 @@ app.use((req, res, next) => {
 });
 
 app.use('/api/v1', routes);
+
+app.all('/{*splat}', (req, res, next) => {
+  next(new AppError(`Can't find ${req.originalUrl}`, 404));
+});
+
+app.use(globalErrorHandler);
 
 export default app;
