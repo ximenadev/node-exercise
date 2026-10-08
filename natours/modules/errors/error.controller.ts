@@ -1,6 +1,30 @@
 import { Request, Response, NextFunction } from 'express';
 import { AppError } from '../../utils';
 
+const sendErrorDev = (err: AppError, res: Response) => {
+  res.status(err.statusCode || 500).json({
+    status: err.status || 'error',
+    error: err,
+    message: err.message,
+    stack: err.stack,
+  });
+};
+
+const sendErrorProd = (err: AppError, res: Response) => {
+  if (err.isOperational) {
+    res.status(err.statusCode || 500).json({
+      status: err.status || 'error',
+      message: err.message,
+    });
+  } else {
+    console.error('ERROR', err);
+    res.status(500).json({
+      status: 'error',
+      message: 'Something went wrong, please try again later.',
+    });
+  }
+};
+
 export const globalErrorHandler = (
   err: AppError,
   req: Request,
@@ -10,8 +34,14 @@ export const globalErrorHandler = (
   const statusCode = err.statusCode || 500;
   const status = err.status || 'error';
 
-  res.status(statusCode).json({
-    status,
-    message: err.message,
-  });
+  if (process.env.NODE_ENV === 'development') {
+    sendErrorDev(err, res);
+  } else if (process.env.NODE_ENV === 'production') {
+    sendErrorProd(err, res);
+  } else {
+    res.status(statusCode).json({
+      status,
+      message: err.message,
+    });
+  }
 };
