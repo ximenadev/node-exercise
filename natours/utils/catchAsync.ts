@@ -6,7 +6,7 @@ type AsyncHandler = (
   next: NextFunction,
 ) => Promise<unknown>;
 
-export default function catchAsync(fn: AsyncHandler) {
+export function catchAsync(fn: AsyncHandler) {
   return (req: Request, res: Response, next: NextFunction): void => {
     fn(req, res, next).catch(next);
   };
