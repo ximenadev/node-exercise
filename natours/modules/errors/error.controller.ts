@@ -24,6 +24,9 @@ const handleValidationErrorDB = (err: MongooseError.ValidationError) => {
   return new AppError(message, 400);
 };
 
+const handleJSONParseError = () =>
+  new AppError('Invalid JSON in request body', 400);
+
 const sendErrorDev = (err: AppError, res: Response) => {
   res.status(err.statusCode || 500).json({
     status: err.status || 'error',
@@ -60,16 +63,18 @@ export const globalErrorHandler = (
   if (process.env.NODE_ENV === 'development') {
     sendErrorDev(err, res);
   } else if (process.env.NODE_ENV === 'production') {
-    let error: AppError = Object.assign(
-      Object.create(Object.getPrototypeOf(err)),
-      err,
-      { name: err.name, message: err.message },
+    // Copy descriptors (not values): message is non-enumerable and name can be read-only
+    let error: AppError = Object.create(
+      Object.getPrototypeOf(err),
+      Object.getOwnPropertyDescriptors(err),
     );
 
     if (error.name === 'CastError')
       error = handleCastErrorDB(error as unknown as MongooseError.CastError);
     if ((error as unknown as DuplicateKeyError).code === 11000)
       error = handleDuplicateFieldsDB(error as unknown as DuplicateKeyError);
+    if ((error as unknown as { type?: string }).type === 'entity.parse.failed')
+      error = handleJSONParseError();
     if (error.name === 'ValidationError')
       error = handleValidationErrorDB(
         error as unknown as MongooseError.ValidationError,
