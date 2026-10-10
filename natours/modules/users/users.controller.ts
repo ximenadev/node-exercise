@@ -13,6 +13,12 @@ export const getAllUsers = catchAsync(async (req, res, next) => {
   });
 });
 
+export const deleteMe = catchAsync(async (req, res, next) => {
+  await User.findByIdAndUpdate(req.user!.id, { active: false });
+
+  res.status(204).send();
+});
+
 export const getUser = factory.getOne(User);
 export const updateUser = factory.updateOne(User);
 export const deleteUser = factory.deleteOne(User);

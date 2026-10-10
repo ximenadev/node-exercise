@@ -1,4 +1,4 @@
-import mongoose, { HydratedDocument, Model } from 'mongoose';
+import mongoose, { HydratedDocument, Model, Query } from 'mongoose';
 import validator from 'validator';
 import bcrypt from 'bcryptjs';
 import crypto from 'node:crypto';
@@ -90,7 +90,7 @@ usersSchema.methods.changedPasswordAfter = function (
 };
 
 usersSchema.pre('save', async function () {
-  if (!this.isModified('password') || this.isNew) return;
+  if (!this.isModified('password')) return;
   this.password = await bcrypt.hash(this.password, 12);
   this.passwordConfirm = undefined as never; // Remove passwordConfirm field from the database
 });
@@ -98,6 +98,10 @@ usersSchema.pre('save', async function () {
 usersSchema.pre('save', async function () {
   if (!this.isModified('password') || this.isNew) return;
   this.passwordChangedAt = new Date(Date.now() - 1000);
+});
+
+usersSchema.pre(/^find/, function (this: Query<unknown, unknown>) {
+  this.find({ active: { $ne: false } });
 });
 
 usersSchema.methods.correctPassword = async function (
