@@ -1,4 +1,3 @@
-import type { NextFunction, Request, Response } from 'express';
 import Tour from './tours.model';
 import {
   type QueryString,
@@ -7,20 +6,6 @@ import {
   catchAsync,
   factory,
 } from '../../utils';
-
-export const aliasTopTours = (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
-  // Express 5 re-parses req.query on every access, so mutations are lost
-  res.locals.query = {
-    limit: '5',
-    sort: '-ratingsAverage,price',
-    fields: 'name,price,ratingsAverage,summary,difficulty',
-  };
-  next();
-};
 
 export const getAllTours = catchAsync(async (req, res, next) => {
   const queryString = { ...req.query, ...res.locals.query } as QueryString;

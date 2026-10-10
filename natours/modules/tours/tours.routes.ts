@@ -1,6 +1,5 @@
 import { Router } from 'express';
 import {
-  aliasTopTours,
   createTour,
   deleteTour,
   getAllTours,
@@ -9,6 +8,7 @@ import {
   getTourStats,
   updateTour,
 } from './tours.controller';
+import { aliasTopTours } from './tours.middleware';
 import { protect, restrictTo } from '../auth/auth.middleware';
 
 const router = Router();
