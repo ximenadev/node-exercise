@@ -27,6 +27,37 @@ const handleValidationErrorDB = (err: MongooseError.ValidationError) => {
 const handleJSONParseError = () =>
   new AppError('Invalid JSON in request body', 400);
 
+const handleJWTError = () =>
+  new AppError('Invalid token. Please log in again!', 401);
+
+const handleTokenExpiredError = (err: { expiredAt: Date }) =>
+  new AppError(
+    `Your token expired at ${err.expiredAt}. Please log in again!`,
+    401,
+  );
+
+const normalizeError = (error: AppError): AppError => {
+  const err = error as unknown as DuplicateKeyError & { type?: string };
+
+  if (err.code === 11000) return handleDuplicateFieldsDB(err);
+  if (err.type === 'entity.parse.failed') return handleJSONParseError();
+
+  switch (err.name) {
+    case 'CastError':
+      return handleCastErrorDB(err as unknown as MongooseError.CastError);
+    case 'ValidationError':
+      return handleValidationErrorDB(
+        err as unknown as MongooseError.ValidationError,
+      );
+    case 'JsonWebTokenError':
+      return handleJWTError();
+    case 'TokenExpiredError':
+      return handleTokenExpiredError(err as unknown as { expiredAt: Date });
+    default:
+      return error;
+  }
+};
+
 const sendErrorDev = (err: AppError, res: Response) => {
   res.status(err.statusCode || 500).json({
     status: err.status || 'error',
@@ -61,25 +92,16 @@ export const globalErrorHandler = (
   err.status = err.status || 'error';
 
   if (process.env.NODE_ENV === 'development') {
-    sendErrorDev(err, res);
+    const error = normalizeError(err);
+    if (error !== err) error.stack = err.stack;
+    sendErrorDev(error, res);
   } else if (process.env.NODE_ENV === 'production') {
     // Copy descriptors (not values): message is non-enumerable and name can be read-only
-    let error: AppError = Object.create(
+    const error: AppError = Object.create(
       Object.getPrototypeOf(err),
       Object.getOwnPropertyDescriptors(err),
     );
 
-    if (error.name === 'CastError')
-      error = handleCastErrorDB(error as unknown as MongooseError.CastError);
-    if ((error as unknown as DuplicateKeyError).code === 11000)
-      error = handleDuplicateFieldsDB(error as unknown as DuplicateKeyError);
-    if ((error as unknown as { type?: string }).type === 'entity.parse.failed')
-      error = handleJSONParseError();
-    if (error.name === 'ValidationError')
-      error = handleValidationErrorDB(
-        error as unknown as MongooseError.ValidationError,
-      );
-
-    sendErrorProd(error, res);
+    sendErrorProd(normalizeError(error), res);
   }
 };

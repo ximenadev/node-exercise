@@ -5,6 +5,7 @@ import {
   APIFeatures,
   AppError,
   catchAsync,
+  factory,
 } from '../../utils';
 
 export const aliasTopTours = (
@@ -39,49 +40,10 @@ export const getAllTours = catchAsync(async (req, res, next) => {
   });
 });
 
-export const getTour = catchAsync(async (req, res, next) => {
-  const tour = await Tour.findById(req.params.id);
-  if (!tour) return next(new AppError('No tour found with that ID', 404));
-
-  res.status(200).json({
-    status: 'success',
-    data: {
-      tour,
-    },
-  });
-});
-
-export const createTour = catchAsync(async (req, res, next) => {
-  const newTour = await Tour.create(req.body);
-  res.status(201).json({
-    status: 'success',
-    data: {
-      tour: newTour,
-    },
-  });
-});
-
-export const updateTour = catchAsync(async (req, res, next) => {
-  const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
-    new: true,
-    runValidators: true,
-  });
-  if (!tour) return next(new AppError('No tour found with that ID', 404));
-
-  res.status(200).json({
-    status: 'success',
-    data: {
-      tour,
-    },
-  });
-});
-
-export const deleteTour = catchAsync(async (req, res, next) => {
-  const tour = await Tour.findByIdAndDelete(req.params.id);
-  if (!tour) return next(new AppError('No tour found with that ID', 404));
-
-  res.status(204).send();
-});
+export const getTour = factory.getOne(Tour);
+export const createTour = factory.createOne(Tour);
+export const updateTour = factory.updateOne(Tour);
+export const deleteTour = factory.deleteOne(Tour);
 
 export const getTourStats = catchAsync(async (req, res, next) => {
   const stats = await Tour.aggregate([
@@ -116,11 +78,7 @@ export const getMonthlyPlan = catchAsync(async (req, res, next) => {
   const year = Number(req.params.year);
 
   if (!Number.isInteger(year) || year < 1000 || year > 9999) {
-    res.status(400).json({
-      status: 'fail',
-      message: 'Year must be a valid 4-digit number',
-    });
-    return;
+    return next(new AppError('Year must be a valid 4-digit number', 400));
   }
 
   const plan = await Tour.aggregate([

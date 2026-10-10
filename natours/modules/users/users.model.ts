@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose, { HydratedDocument, Model } from 'mongoose';
 import validator from 'validator';
 import bcrypt from 'bcryptjs';
 
@@ -15,7 +15,19 @@ interface IUser {
   active?: boolean;
 }
 
-const usersSchema = new mongoose.Schema({
+interface IUserMethods {
+  correctPassword(
+    candidatePassword: string,
+    userPassword: string,
+  ): Promise<boolean>;
+  changedPasswordAfter(JWTTimestamp: number): boolean;
+}
+
+type UserModel = Model<IUser, object, IUserMethods>;
+
+export type UserDocument = HydratedDocument<IUser, IUserMethods>;
+
+const usersSchema = new mongoose.Schema<IUser, UserModel, IUserMethods>({
   name: {
     type: String,
     required: [true, 'A user must have a name'],
@@ -38,8 +50,8 @@ const usersSchema = new mongoose.Schema({
     required: [true, 'Please confirm your password'],
     validate: {
       // This only works on CREATE and SAVE
-      validator: function (this: IUser, el: string) {
-        return el === this.password;
+      validator: function (this: unknown, el: string) {
+        return el === (this as IUser).password;
       },
       message: 'Passwords are not the same',
     },
@@ -63,11 +75,30 @@ const usersSchema = new mongoose.Schema({
   },
 });
 
+usersSchema.methods.changedPasswordAfter = function (
+  JWTTimestamp: number,
+): boolean {
+  if (this.passwordChangedAt) {
+    const changedTimestamp = Math.floor(
+      this.passwordChangedAt.getTime() / 1000,
+    );
+    return JWTTimestamp < changedTimestamp;
+  }
+  return false;
+};
+
 usersSchema.pre('save', async function () {
   if (!this.isModified('password')) return;
   this.password = await bcrypt.hash(this.password, 12);
   this.passwordConfirm = undefined as never; // Remove passwordConfirm field from the database
 });
 
-const User = mongoose.model<IUser>('User', usersSchema);
+usersSchema.methods.correctPassword = async function (
+  candidatePassword: string,
+  userPassword: string,
+): Promise<boolean> {
+  return await bcrypt.compare(candidatePassword, userPassword);
+};
+
+const User = mongoose.model<IUser, UserModel>('User', usersSchema);
 export default User;
