@@ -2,7 +2,7 @@ import express from 'express';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import routes from './routes';
-import { AppError } from './utils';
+import { AppError, apiLimiter } from './utils';
 import { globalErrorHandler } from './modules/errors/error.controller';
 
 const app = express();
@@ -15,6 +15,8 @@ app.set('query parser', 'extended');
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
+
+app.use('/api', apiLimiter);
 
 app.use(express.json());
 app.use(express.static('public'));
