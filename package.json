@@ -1,14 +1,14 @@
 {
-  "name": "node-course",
+  "name": "node-exercise",
   "version": "1.0.0",
   "description": "learning node express and mongoDB",
-  "homepage": "https://github.com/ximenadev/node-course#readme",
+  "homepage": "https://github.com/ximenadev/node-exercise#readme",
   "bugs": {
-    "url": "https://github.com/ximenadev/node-course/issues"
+    "url": "https://github.com/ximenadev/node-exercise/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ximenadev/node-course.git"
+    "url": "git+https://github.com/ximenadev/node-exercise.git"
   },
   "type": "module",
   "main": "server.ts",
