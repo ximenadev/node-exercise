@@ -6,8 +6,10 @@ import {
   getUser,
   updateUser,
 } from './users.controller';
-import { filterBody, forbidPasswordUpdate, setMeId } from './users.middleware';
+import { forbidPasswordUpdate, setMeId } from './users.middleware';
+import { updateMeSchema, updateUserSchema } from './users.schemas';
 import { protect, restrictTo } from '../auth/auth.middleware';
+import { validateBody } from '../../utils';
 
 const router = Router();
 
@@ -16,7 +18,7 @@ router.use(protect);
 router.patch(
   '/updateMe',
   forbidPasswordUpdate,
-  filterBody('name', 'email'),
+  validateBody(updateMeSchema),
   setMeId,
   updateUser,
 );
@@ -29,7 +31,7 @@ router.route('/').get(getAllUsers);
 router
   .route('/:id')
   .get(getUser)
-  .patch(filterBody('name', 'email', 'role'), updateUser)
+  .patch(validateBody(updateUserSchema), updateUser)
   .delete(deleteUser);
 
 export default router;

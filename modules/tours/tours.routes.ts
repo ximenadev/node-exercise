@@ -9,7 +9,9 @@ import {
   updateTour,
 } from './tours.controller';
 import { aliasTopTours } from './tours.middleware';
+import { createTourSchema, updateTourSchema } from './tours.schemas';
 import { protect, restrictTo } from '../auth/auth.middleware';
+import { validateBody } from '../../utils';
 
 const router = Router();
 
@@ -18,14 +20,17 @@ const router = Router();
 
 router.use(protect);
 
-router.route('/').get(getAllTours).post(createTour);
+router
+  .route('/')
+  .get(getAllTours)
+  .post(validateBody(createTourSchema), createTour);
 router.route('/top-5-cheap').get(aliasTopTours, getAllTours);
 router.route('/tour-stats').get(getTourStats);
 router.route('/monthly-plan/:year').get(getMonthlyPlan);
 router
   .route('/:id')
   .get(getTour)
-  .patch(updateTour)
+  .patch(validateBody(updateTourSchema), updateTour)
   .delete(restrictTo('admin', 'lead-guide'), deleteTour);
 
 export default router;

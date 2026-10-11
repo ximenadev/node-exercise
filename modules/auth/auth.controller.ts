@@ -20,9 +20,6 @@ export const signup = catchAsync(async (req, res, next) => {
 export const login = catchAsync(async (req, res, next) => {
   const { email, password } = req.body;
 
-  if (!email || !password)
-    return next(new AppError('Please provide email and password!', 400));
-
   const user = await User.findOne({ email }).select('+password');
 
   if (!user || !(await user.correctPassword(password, user.password))) {
@@ -100,12 +97,6 @@ export const resetPassword = catchAsync(async (req, res, next) => {
 
 export const updatePassword = catchAsync(async (req, res, next) => {
   const { currentPassword, newPassword, passwordConfirm } = req.body;
-
-  if (!currentPassword || !newPassword) {
-    return next(
-      new AppError('Please provide currentPassword and newPassword', 400),
-    );
-  }
 
   const user = await User.findById(req.user!.id).select('+password');
 
