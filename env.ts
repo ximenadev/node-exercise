@@ -10,6 +10,7 @@ const required = [
   'PORT',
   'JWT_SECRET',
   'JWT_EXPIRES_IN',
+  'JWT_COOKIE_EXPIRES_IN',
   'EMAIL_HOST',
   'EMAIL_PORT',
   'EMAIL_USERNAME',

@@ -14,6 +14,16 @@ export const createAndSendToken = (
   res: Response,
 ) => {
   const token = signToken(user.id);
+
+  res.cookie('jwt', token, {
+    expires: new Date(
+      Date.now() +
+        Number(process.env.JWT_COOKIE_EXPIRES_IN) * 24 * 60 * 60 * 1000,
+    ),
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+  });
+
   // select: false doesn't apply to create(), so drop the hash before responding
   user.password = undefined as never;
 
