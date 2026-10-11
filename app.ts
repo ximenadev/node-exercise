@@ -1,10 +1,13 @@
 import express from 'express';
+import helmet from 'helmet';
 import morgan from 'morgan';
 import routes from './routes';
 import { AppError } from './utils';
 import { globalErrorHandler } from './modules/errors/error.controller';
 
 const app = express();
+
+app.use(helmet());
 
 // Express 5 defaults to 'simple', which doesn't parse price[gte]=500
 app.set('query parser', 'extended');
