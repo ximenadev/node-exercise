@@ -1,16 +1,15 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
+    "module": "esnext",
+    "moduleResolution": "bundler",
     "types": ["node"],
     "strict": true,
     "noEmit": true,
-    "allowImportingTsExtensions": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true
   },
-  "include": ["node-farm/**/*.ts", "async-js/**/*.ts", "src/**/*.ts"],
+  "include": ["**/*.ts"],
   "exclude": ["node_modules"]
 }
