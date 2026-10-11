@@ -1,5 +1,4 @@
 allowBuilds:
-  bcrypt: false
   esbuild: true
 minimumReleaseAgeExclude:
   - '@typescript-eslint/eslint-plugin@8.71.0'
