@@ -7,16 +7,12 @@ import {
   getReview,
   updateReview,
 } from './reviews.controller';
-import { filterByTour } from './reviews.middleware';
 
 const router = Router({ mergeParams: true });
 
 router.use(protect);
 
-router
-  .route('/')
-  .get(filterByTour, getAllReviews)
-  .post(restrictTo('user'), createReview);
+router.route('/').get(getAllReviews).post(restrictTo('user'), createReview);
 
 router
   .route('/:id')

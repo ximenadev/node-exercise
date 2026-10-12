@@ -1,4 +1,6 @@
-import { catchAsync, factory } from '../../utils';
+import { catchAsync, factory, validateBody } from '../../utils';
+import { forbidPasswordUpdate, setMeId } from './users.middleware';
+import { updateMeSchema, updateUserSchema } from './users.schemas';
 import User from './users.model';
 
 export const getAllUsers = catchAsync(async (req, res, next) => {
@@ -20,5 +22,18 @@ export const deleteMe = catchAsync(async (req, res, next) => {
 });
 
 export const getUser = factory.getOne(User);
-export const updateUser = factory.updateOne(User);
+export const getMe = [setMeId, getUser];
+
+export const updateMe = [
+  forbidPasswordUpdate,
+  validateBody(updateMeSchema),
+  setMeId,
+  factory.updateOne(User),
+];
+
+export const updateUser = [
+  validateBody(updateUserSchema),
+  factory.updateOne(User),
+];
+
 export const deleteUser = factory.deleteOne(User);

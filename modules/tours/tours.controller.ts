@@ -1,5 +1,7 @@
 import Tour from './tours.model';
-import { AppError, catchAsync, factory } from '../../utils';
+import { AppError, catchAsync, factory, validateBody } from '../../utils';
+import { aliasTopTours } from './tours.middleware';
+import { createTourSchema, updateTourSchema } from './tours.schemas';
 
 const guidesPopulate = { path: 'guides', select: 'name photo role' };
 
@@ -12,11 +14,18 @@ const reviewsPopulate = {
 export const getAllTours = factory.getAllWithFeatures(Tour, {
   populate: guidesPopulate,
 });
+export const getTopTours = [aliasTopTours, getAllTours];
 export const getTour = factory.getOne(Tour, {
   populate: [guidesPopulate, reviewsPopulate],
 });
-export const createTour = factory.createOne(Tour);
-export const updateTour = factory.updateOne(Tour, { populate: guidesPopulate });
+export const createTour = [
+  validateBody(createTourSchema),
+  factory.createOne(Tour),
+];
+export const updateTour = [
+  validateBody(updateTourSchema),
+  factory.updateOne(Tour, { populate: guidesPopulate }),
+];
 export const deleteTour = factory.deleteOne(Tour);
 
 export const getTourStats = catchAsync(async (req, res, next) => {
