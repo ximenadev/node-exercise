@@ -1,3 +1,4 @@
+import cookieParser from 'cookie-parser';
 import express from 'express';
 import helmet from 'helmet';
 import morgan from 'morgan';
@@ -6,6 +7,10 @@ import { AppError, apiLimiter, parseQuery } from './utils';
 import { globalErrorHandler } from './modules/errors/error.controller';
 
 const app = express();
+
+if (process.env.TRUST_PROXY) {
+  app.set('trust proxy', Number(process.env.TRUST_PROXY));
+}
 
 app.use(helmet());
 
@@ -19,6 +24,7 @@ if (process.env.NODE_ENV === 'development') {
 app.use('/api', apiLimiter);
 
 app.use(express.json());
+app.use(cookieParser());
 app.use(express.static('public'));
 
 app.use((req, res, next) => {

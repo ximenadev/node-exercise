@@ -5,11 +5,36 @@ import mongoose, {
 } from 'mongoose';
 import slugify from 'slugify';
 import User from '../users/users.model';
+import { GUIDE_ROLES } from '../users/users.constants';
+import { RATING_MAX, RATING_MIN } from '../reviews/reviews.constants';
+import '../reviews/reviews.model';
+import {
+  COORDINATES_MESSAGE,
+  DEFAULT_RATINGS_AVERAGE,
+  DIFFICULTIES,
+  GEOJSON_POINT,
+  LATITUDE_RANGE,
+  LONGITUDE_RANGE,
+  type Difficulty,
+} from './tours.constants';
 
-const GUIDE_ROLES = ['guide', 'lead-guide'] as const;
+const inRange = (value: number, range: { min: number; max: number }) =>
+  value >= range.min && value <= range.max;
+
+const coordinatesField = {
+  type: [Number],
+  default: undefined,
+  validate: {
+    validator: (coordinates: number[]) =>
+      coordinates.length === 2 &&
+      inRange(coordinates[0], LONGITUDE_RANGE) &&
+      inRange(coordinates[1], LATITUDE_RANGE),
+    message: COORDINATES_MESSAGE,
+  },
+};
 
 export interface IGeoPoint {
-  type: 'Point';
+  type: typeof GEOJSON_POINT;
   coordinates: number[];
   address?: string;
   description?: string;
@@ -24,7 +49,7 @@ export interface ITour {
   slug?: string;
   duration: number;
   maxGroupSize: number;
-  difficulty: 'easy' | 'medium' | 'difficult';
+  difficulty: Difficulty;
   ratingsAverage: number;
   ratingsQuantity: number;
   price: number;
@@ -65,15 +90,15 @@ const tourSchema = new mongoose.Schema<ITour>(
       type: String,
       required: [true, 'A tour must have a difficulty'],
       enum: {
-        values: ['easy', 'medium', 'difficult'],
-        message: 'Difficulty is either: easy, medium, difficult',
+        values: DIFFICULTIES,
+        message: `Difficulty is either: ${DIFFICULTIES.join(', ')}`,
       },
     },
     ratingsAverage: {
       type: Number,
-      default: 4.5,
-      min: [1, 'Rating must be above 1.0'],
-      max: [5, 'Rating must be below 5.0'],
+      default: DEFAULT_RATINGS_AVERAGE,
+      min: [RATING_MIN, `Rating must be above ${RATING_MIN.toFixed(1)}`],
+      max: [RATING_MAX, `Rating must be below ${RATING_MAX.toFixed(1)}`],
     },
     ratingsQuantity: {
       type: Number,
@@ -127,10 +152,9 @@ const tourSchema = new mongoose.Schema<ITour>(
     startLocation: {
       type: {
         type: String,
-        default: 'Point',
-        enum: ['Point'],
+        enum: [GEOJSON_POINT],
       },
-      coordinates: [Number],
+      coordinates: coordinatesField,
       address: String,
       description: String,
     },
@@ -138,10 +162,10 @@ const tourSchema = new mongoose.Schema<ITour>(
       {
         type: {
           type: String,
-          default: 'Point',
-          enum: ['Point'],
+          default: GEOJSON_POINT,
+          enum: [GEOJSON_POINT],
         },
-        coordinates: [Number],
+        coordinates: coordinatesField,
         address: String,
         description: String,
         day: Number,
@@ -173,6 +197,14 @@ const tourSchema = new mongoose.Schema<ITour>(
   },
 );
 
+tourSchema.index({ startLocation: '2dsphere' });
+
+tourSchema.virtual('reviews', {
+  ref: 'Review',
+  foreignField: 'tour',
+  localField: '_id',
+});
+
 tourSchema.virtual('durationWeeks').get(function (
   this: HydratedDocument<ITour>,
 ) {
@@ -192,13 +224,19 @@ tourSchema.pre('save', function () {
 tourSchema.pre(
   /^find/,
   function (this: Query<unknown, ITour> & { start: number }) {
-    this.find({ secretTour: { $ne: true } });
-    const projection = this.projection() ?? {};
-    const pickedFields = Object.values(projection).some(value => value);
-    if (!pickedFields || 'guides' in projection) {
-      this.populate({ path: 'guides', select: 'name photo role' });
-    }
+    this.where({ secretTour: { $ne: true } });
     this.start = Date.now();
+  },
+);
+
+tourSchema.pre(/^(count|distinct)/, function (this: Query<unknown, ITour>) {
+  this.where({ secretTour: { $ne: true } });
+});
+
+tourSchema.post(
+  'findOneAndDelete',
+  async function (doc: HydratedDocument<ITour> | null) {
+    if (doc) await mongoose.model('Review').deleteMany({ tour: doc._id });
   },
 );
 

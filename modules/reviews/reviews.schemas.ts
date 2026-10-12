@@ -1,4 +1,7 @@
 import { z } from 'zod';
+import { RATING_MAX, RATING_MIN } from './reviews.constants';
+
+const RATING_RANGE_MESSAGE = `Rating must be between ${RATING_MIN} and ${RATING_MAX}`;
 
 const requiredString = (field: string, message: string) =>
   z.string({
@@ -14,8 +17,8 @@ export const createReviewSchema = z.object({
           ? 'You must add a rating'
           : 'rating must be a number',
     })
-    .min(1, 'Rating must be between 1 and 5')
-    .max(5, 'Rating must be between 1 and 5'),
+    .min(RATING_MIN, RATING_RANGE_MESSAGE)
+    .max(RATING_MAX, RATING_RANGE_MESSAGE),
   review: requiredString('review', 'You must write a review'),
   title: requiredString('title', 'A review must have a title'),
   tour: z

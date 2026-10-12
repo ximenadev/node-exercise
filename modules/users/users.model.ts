@@ -2,13 +2,14 @@ import mongoose, { HydratedDocument, Model, Query } from 'mongoose';
 import validator from 'validator';
 import bcrypt from 'bcryptjs';
 import crypto from 'node:crypto';
+import { PASSWORD_MIN_LENGTH, ROLES, type Role } from './users.constants';
 
 export interface IUser {
   name: string;
   email: string;
   password: string;
   passwordConfirm: string;
-  role?: 'user' | 'guide' | 'lead-guide' | 'admin';
+  role?: Role;
   photo?: string;
   passwordChangedAt?: Date;
   passwordResetToken?: string;
@@ -44,7 +45,10 @@ const usersSchema = new mongoose.Schema<IUser, UserModel, IUserMethods>({
   password: {
     type: String,
     required: [true, 'A user must have a password'],
-    minlength: [8, 'Password must be at least 8 characters long'],
+    minlength: [
+      PASSWORD_MIN_LENGTH,
+      `Password must be at least ${PASSWORD_MIN_LENGTH} characters long`,
+    ],
     select: false, // Exclude password field from query results by default
   },
   passwordConfirm: {
@@ -60,7 +64,7 @@ const usersSchema = new mongoose.Schema<IUser, UserModel, IUserMethods>({
   },
   role: {
     type: String,
-    enum: ['user', 'guide', 'lead-guide', 'admin'],
+    enum: ROLES,
     default: 'user',
   },
   photo: {
@@ -100,8 +104,15 @@ usersSchema.pre('save', async function () {
   this.passwordChangedAt = new Date(Date.now() - 1000);
 });
 
-usersSchema.pre(/^find/, function (this: Query<unknown, unknown>) {
-  this.find({ active: { $ne: false } });
+usersSchema.pre(
+  /^(find|count|distinct)/,
+  function (this: Query<unknown, unknown>) {
+    this.where({ active: { $ne: false } });
+  },
+);
+
+usersSchema.pre('aggregate', function () {
+  this.pipeline().unshift({ $match: { active: { $ne: false } } });
 });
 
 usersSchema.methods.correctPassword = async function (

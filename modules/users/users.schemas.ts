@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { ROLES } from './users.constants';
 
 export const updateMeSchema = z
   .object({
@@ -11,8 +12,8 @@ export const updateUserSchema = z
   .object({
     name: z.string({ error: 'name must be a string' }),
     email: z.string({ error: 'email must be a string' }),
-    role: z.enum(['user', 'guide', 'lead-guide', 'admin'], {
-      error: 'role must be one of: user, guide, lead-guide, admin',
+    role: z.enum(ROLES, {
+      error: `role must be one of: ${ROLES.join(', ')}`,
     }),
   })
   .partial();

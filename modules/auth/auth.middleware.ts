@@ -4,9 +4,10 @@ import { AppError, catchAsync } from '../../utils';
 import { NextFunction, Response, Request } from 'express';
 
 export const protect = catchAsync(async (req, res, next) => {
-  const [scheme, token] = req.headers.authorization?.split(' ') ?? [];
+  const [scheme, bearer] = req.headers.authorization?.split(' ') ?? [];
+  const token = scheme === 'Bearer' && bearer ? bearer : req.cookies?.jwt;
 
-  if (scheme !== 'Bearer' || !token) {
+  if (typeof token !== 'string' || !token) {
     return next(
       new AppError('You are not logged in. Please log in to get access.', 401),
     );

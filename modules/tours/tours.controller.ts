@@ -1,10 +1,22 @@
 import Tour from './tours.model';
 import { AppError, catchAsync, factory } from '../../utils';
 
-export const getAllTours = factory.getAllWithFeatures(Tour);
-export const getTour = factory.getOne(Tour);
+const guidesPopulate = { path: 'guides', select: 'name photo role' };
+
+const reviewsPopulate = {
+  path: 'reviews',
+  select: 'rating title review author createdAt',
+  populate: { path: 'author', select: 'name photo' },
+};
+
+export const getAllTours = factory.getAllWithFeatures(Tour, {
+  populate: guidesPopulate,
+});
+export const getTour = factory.getOne(Tour, {
+  populate: [guidesPopulate, reviewsPopulate],
+});
 export const createTour = factory.createOne(Tour);
-export const updateTour = factory.updateOne(Tour);
+export const updateTour = factory.updateOne(Tour, { populate: guidesPopulate });
 export const deleteTour = factory.deleteOne(Tour);
 
 export const getTourStats = catchAsync(async (req, res, next) => {

@@ -2,6 +2,7 @@ import { Router } from 'express';
 import {
   forgotPassword,
   login,
+  logout,
   resetPassword,
   signup,
   updatePassword,
@@ -20,6 +21,7 @@ const router = Router();
 
 router.route('/signup').post(authLimiter, validateBody(signupSchema), signup);
 router.route('/login').post(authLimiter, validateBody(loginSchema), login);
+router.route('/logout').post(logout);
 
 router
   .route('/forgotPassword')

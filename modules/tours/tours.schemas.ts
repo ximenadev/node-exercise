@@ -1,4 +1,11 @@
 import { z } from 'zod';
+import {
+  COORDINATES_MESSAGE,
+  DIFFICULTIES,
+  GEOJSON_POINT,
+  LATITUDE_RANGE,
+  LONGITUDE_RANGE,
+} from './tours.constants';
 
 const requiredString = (field: string, message: string) =>
   z.string({
@@ -12,22 +19,27 @@ const requiredNumber = (field: string, message: string) =>
       issue.input === undefined ? message : `${field} must be a number`,
   });
 
+const LONGITUDE_MESSAGE = `longitude must be between ${LONGITUDE_RANGE.min} and ${LONGITUDE_RANGE.max}`;
+const LATITUDE_MESSAGE = `latitude must be between ${LATITUDE_RANGE.min} and ${LATITUDE_RANGE.max}`;
+
 const longitude = z
   .number({ error: 'coordinates must be [longitude, latitude] numbers' })
-  .min(-180, 'longitude must be between -180 and 180')
-  .max(180, 'longitude must be between -180 and 180');
+  .min(LONGITUDE_RANGE.min, LONGITUDE_MESSAGE)
+  .max(LONGITUDE_RANGE.max, LONGITUDE_MESSAGE);
 
 const latitude = z
   .number({ error: 'coordinates must be [longitude, latitude] numbers' })
-  .min(-90, 'latitude must be between -90 and 90')
-  .max(90, 'latitude must be between -90 and 90');
+  .min(LATITUDE_RANGE.min, LATITUDE_MESSAGE)
+  .max(LATITUDE_RANGE.max, LATITUDE_MESSAGE);
 
 const coordinates = z.tuple([longitude, latitude], {
-  error: 'coordinates must be [longitude, latitude]',
+  error: COORDINATES_MESSAGE,
 });
 
 const geoPoint = z.object({
-  type: z.literal('Point', { error: "type must be 'Point'" }).default('Point'),
+  type: z
+    .literal(GEOJSON_POINT, { error: `type must be '${GEOJSON_POINT}'` })
+    .default(GEOJSON_POINT),
   coordinates,
   address: z.string({ error: 'address must be a string' }).optional(),
   description: z.string({ error: 'description must be a string' }).optional(),
@@ -49,8 +61,8 @@ export const createTourSchema = z.object({
   name: requiredString('name', 'A tour must have a name'),
   duration: requiredNumber('duration', 'A tour must have a duration'),
   maxGroupSize: requiredNumber('maxGroupSize', 'A tour must have a group size'),
-  difficulty: z.enum(['easy', 'medium', 'difficult'], {
-    error: 'Difficulty is either: easy, medium, difficult',
+  difficulty: z.enum(DIFFICULTIES, {
+    error: `Difficulty is either: ${DIFFICULTIES.join(', ')}`,
   }),
   price: requiredNumber('price', 'A tour must have a price'),
   priceDiscount: z
