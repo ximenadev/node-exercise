@@ -1,5 +1,23 @@
-import mongoose, { type HydratedDocument, type Query } from 'mongoose';
+import mongoose, {
+  type HydratedDocument,
+  type Query,
+  type Types,
+} from 'mongoose';
 import slugify from 'slugify';
+import User from '../users/users.model';
+
+const GUIDE_ROLES = ['guide', 'lead-guide'] as const;
+
+export interface IGeoPoint {
+  type: 'Point';
+  coordinates: number[];
+  address?: string;
+  description?: string;
+}
+
+export interface ITourLocation extends IGeoPoint {
+  day?: number;
+}
 
 export interface ITour {
   name: string;
@@ -19,6 +37,9 @@ export interface ITour {
   updatedAt?: Date;
   startDates: Date[];
   secretTour: boolean;
+  startLocation?: IGeoPoint;
+  locations: ITourLocation[];
+  guides: Types.ObjectId[];
 }
 
 const tourSchema = new mongoose.Schema<ITour>(
@@ -103,6 +124,47 @@ const tourSchema = new mongoose.Schema<ITour>(
       type: Boolean,
       default: false,
     },
+    startLocation: {
+      type: {
+        type: String,
+        default: 'Point',
+        enum: ['Point'],
+      },
+      coordinates: [Number],
+      address: String,
+      description: String,
+    },
+    locations: [
+      {
+        type: {
+          type: String,
+          default: 'Point',
+          enum: ['Point'],
+        },
+        coordinates: [Number],
+        address: String,
+        description: String,
+        day: Number,
+      },
+    ],
+    guides: {
+      type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+      validate: {
+        validator: async (ids: Types.ObjectId[]) => {
+          const unique = new Set(ids.map(String));
+          if (unique.size === 0) return true;
+          const guides = await User.find({
+            _id: { $in: [...unique] },
+            role: { $in: GUIDE_ROLES },
+          })
+            .select('_id')
+            .lean();
+          return guides.length === unique.size;
+        },
+        message:
+          'Every guide must be an existing, active user with the guide or lead-guide role',
+      },
+    },
   },
   {
     timestamps: true,
@@ -131,6 +193,11 @@ tourSchema.pre(
   /^find/,
   function (this: Query<unknown, ITour> & { start: number }) {
     this.find({ secretTour: { $ne: true } });
+    const projection = this.projection() ?? {};
+    const pickedFields = Object.values(projection).some(value => value);
+    if (!pickedFields || 'guides' in projection) {
+      this.populate({ path: 'guides', select: 'name photo role' });
+    }
     this.start = Date.now();
   },
 );

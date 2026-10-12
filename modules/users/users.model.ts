@@ -3,7 +3,7 @@ import validator from 'validator';
 import bcrypt from 'bcryptjs';
 import crypto from 'node:crypto';
 
-interface IUser {
+export interface IUser {
   name: string;
   email: string;
   password: string;
