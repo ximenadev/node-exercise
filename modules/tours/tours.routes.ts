@@ -12,6 +12,7 @@ import { aliasTopTours } from './tours.middleware';
 import { createTourSchema, updateTourSchema } from './tours.schemas';
 import { protect, restrictTo } from '../auth/auth.middleware';
 import { validateBody } from '../../utils';
+import reviewRouter from '../reviews/reviews.routes';
 
 const router = Router();
 
@@ -19,6 +20,8 @@ const router = Router();
 // router.route('/').get(getAllTours).post(checkBody, createTour);
 
 router.use(protect);
+
+router.use('/:tourId/reviews', reviewRouter);
 
 router
   .route('/')

@@ -1,30 +1,7 @@
 import Tour from './tours.model';
-import {
-  type QueryString,
-  APIFeatures,
-  AppError,
-  catchAsync,
-  factory,
-} from '../../utils';
+import { AppError, catchAsync, factory } from '../../utils';
 
-export const getAllTours = catchAsync(async (req, res, next) => {
-  const queryString = { ...req.query, ...res.locals.query } as QueryString;
-  const features = new APIFeatures(Tour.find(), queryString)
-    .filter()
-    .sort()
-    .limitFields()
-    .paginate();
-  const tours = await features.query;
-
-  res.status(200).json({
-    status: 'success',
-    count: tours.length,
-    data: {
-      tours,
-    },
-  });
-});
-
+export const getAllTours = factory.getAllWithFeatures(Tour);
 export const getTour = factory.getOne(Tour);
 export const createTour = factory.createOne(Tour);
 export const updateTour = factory.updateOne(Tour);
