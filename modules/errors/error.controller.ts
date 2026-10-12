@@ -14,7 +14,7 @@ const handleCastErrorDB = (err: MongooseError.CastError) => {
 
 const handleDuplicateFieldsDB = (err: DuplicateKeyError) => {
   const value = err.keyValue ? JSON.stringify(err.keyValue) : '';
-  const message = `Duplicate field value: ${value}. Please use another value!`;
+  const message = `Duplicate field value: ${value}. Please use another value`;
   return new AppError(message, 400);
 };
 
@@ -28,11 +28,11 @@ const handleJSONParseError = () =>
   new AppError('Invalid JSON in request body', 400);
 
 const handleJWTError = () =>
-  new AppError('Invalid token. Please log in again!', 401);
+  new AppError('Invalid token. Please log in again', 401);
 
 const handleTokenExpiredError = (err: { expiredAt: Date }) =>
   new AppError(
-    `Your token expired at ${err.expiredAt}. Please log in again!`,
+    `Your token expired at ${err.expiredAt}. Please log in again`,
     401,
   );
 

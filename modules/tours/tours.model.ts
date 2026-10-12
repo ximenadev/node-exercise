@@ -198,6 +198,7 @@ const tourSchema = new mongoose.Schema<ITour>(
 );
 
 tourSchema.index({ startLocation: '2dsphere' });
+tourSchema.index({ slug: 1 });
 
 tourSchema.virtual('reviews', {
   ref: 'Review',
