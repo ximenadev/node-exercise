@@ -31,3 +31,22 @@ if (trustProxy && !/^\d+$/.test(trustProxy)) {
   );
   process.exit(1);
 }
+
+export const clientOrigins = (process.env.CLIENT_URL ?? '')
+  .split(',')
+  .map(origin => origin.trim())
+  .filter(Boolean);
+
+const invalidOrigins = clientOrigins.filter(origin => {
+  try {
+    return new URL(origin).origin !== origin;
+  } catch {
+    return true;
+  }
+});
+if (invalidOrigins.length > 0) {
+  console.error(
+    `CLIENT_URL must be a comma-separated list of origins like http://localhost:5173 (no path, no trailing slash): ${invalidOrigins.join(', ')}`,
+  );
+  process.exit(1);
+}

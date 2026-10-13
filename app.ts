@@ -1,7 +1,9 @@
 import cookieParser from 'cookie-parser';
+import cors from 'cors';
 import express from 'express';
 import helmet from 'helmet';
 import morgan from 'morgan';
+import { clientOrigins } from './env';
 import routes from './routes';
 import { AppError, apiLimiter, parseQuery } from './utils';
 import { globalErrorHandler } from './modules/errors/error.controller';
@@ -12,7 +14,17 @@ if (process.env.TRUST_PROXY) {
   app.set('trust proxy', Number(process.env.TRUST_PROXY));
 }
 
-app.use(helmet());
+app.use(
+  helmet({
+    crossOriginResourcePolicy: clientOrigins.length
+      ? { policy: 'cross-origin' }
+      : undefined,
+  }),
+);
+
+if (clientOrigins.length) {
+  app.use(cors({ origin: clientOrigins, credentials: true, maxAge: 600 }));
+}
 
 // Express 5 defaults to 'simple', which doesn't parse price[gte]=500
 app.set('query parser', parseQuery);
