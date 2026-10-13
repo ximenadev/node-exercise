@@ -7,3 +7,8 @@ export const GEOJSON_POINT = 'Point' as const;
 export const LONGITUDE_RANGE = { min: -180, max: 180 } as const;
 export const LATITUDE_RANGE = { min: -90, max: 90 } as const;
 export const COORDINATES_MESSAGE = 'coordinates must be [longitude, latitude]';
+
+export const DEFAULT_DISTANCE_UNIT = 'km' as const;
+export const EARTH_RADIUS = { mi: 3963.2, km: 6378.1 } as const;
+export const METERS_TO = { mi: 0.000621371, km: 0.001 } as const;
+export type DistanceUnit = keyof typeof EARTH_RADIUS;

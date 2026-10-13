@@ -3,6 +3,7 @@ import {
   createTour,
   deleteTour,
   getAllTours,
+  getDistances,
   getMonthlyPlan,
   getTopTours,
   getTour,
@@ -22,6 +23,7 @@ router.use('/:tourId/reviews', reviewRouter);
 
 router.route('/top-5-cheap').get(getTopTours);
 router.route('/tour-stats').get(getTourStats);
+router.route('/distances').get(getDistances);
 router.route('/monthly-plan/:year').get(getMonthlyPlan);
 router
   .route('/:id')

@@ -82,7 +82,10 @@ export const getAllWithFeatures = <T>(
     const name = resourceName(Doc);
     const queryString = { ...req.query, ...res.locals.query } as QueryString;
 
-    const features = new APIFeatures(Doc.find(), queryString)
+    const features = new APIFeatures(
+      Doc.find(res.locals.filter ?? {}),
+      queryString,
+    )
       .filter()
       .sort()
       .limitFields()

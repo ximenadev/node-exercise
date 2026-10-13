@@ -1,7 +1,12 @@
 import Tour from './tours.model';
 import { AppError, catchAsync, factory, validateBody } from '../../utils';
-import { aliasTopTours } from './tours.middleware';
+import {
+  aliasTopTours,
+  filterByLocation,
+  setDistanceOrigin,
+} from './tours.middleware';
 import { createTourSchema, updateTourSchema } from './tours.schemas';
+import { GEOJSON_POINT, METERS_TO, type DistanceUnit } from './tours.constants';
 
 const guidesPopulate = { path: 'guides', select: 'name photo role' };
 
@@ -11,10 +16,11 @@ const reviewsPopulate = {
   populate: { path: 'author', select: 'name photo' },
 };
 
-export const getAllTours = factory.getAllWithFeatures(Tour, {
-  populate: guidesPopulate,
-});
-export const getTopTours = [aliasTopTours, getAllTours];
+export const getAllTours = [
+  filterByLocation,
+  factory.getAllWithFeatures(Tour, { populate: guidesPopulate }),
+];
+export const getTopTours = [aliasTopTours, ...getAllTours];
 export const getTour = factory.getOne(Tour, {
   populate: [guidesPopulate, reviewsPopulate],
 });
@@ -106,3 +112,34 @@ export const getMonthlyPlan = catchAsync(async (req, res, next) => {
     },
   });
 });
+
+export const getDistances = [
+  setDistanceOrigin,
+  catchAsync(async (req, res, next) => {
+    const { center, unit } = res.locals as {
+      center: { lat: number; lng: number };
+      unit: DistanceUnit;
+    };
+
+    const distances = await Tour.aggregate([
+      {
+        $geoNear: {
+          near: { type: GEOJSON_POINT, coordinates: [center.lng, center.lat] },
+          distanceField: 'distance',
+          distanceMultiplier: METERS_TO[unit],
+        },
+      },
+      {
+        $project: { distance: { $round: ['$distance', 2] }, name: 1 },
+      },
+    ]);
+
+    res.status(200).json({
+      status: 'success',
+      count: distances.length,
+      data: {
+        distances,
+      },
+    });
+  }),
+];

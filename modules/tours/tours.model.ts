@@ -247,7 +247,12 @@ tourSchema.post(
 
 // AGGREGATION MIDDLEWARE
 tourSchema.pre('aggregate', function () {
-  this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });
+  const pipeline = this.pipeline();
+  const hideSecretTours = { $match: { secretTour: { $ne: true } } };
+
+  if (pipeline[0] && '$geoNear' in pipeline[0])
+    pipeline.splice(1, 0, hideSecretTours);
+  else pipeline.unshift(hideSecretTours);
 });
 
 const Tour = mongoose.model<ITour>('Tour', tourSchema);

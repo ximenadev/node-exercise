@@ -3,7 +3,15 @@ import type { Query } from 'mongoose';
 type QueryValue = string | string[] | { [key: string]: QueryValue } | undefined;
 export type QueryString = Record<string, QueryValue>;
 
-const EXCLUDED_FIELDS = ['page', 'sort', 'limit', 'fields'];
+const EXCLUDED_FIELDS = [
+  'page',
+  'sort',
+  'limit',
+  'fields',
+  'near',
+  'radius',
+  'unit',
+];
 const ALLOWED_OPERATORS = ['gte', 'gt', 'lte', 'lt'];
 
 export class APIFeatures<T> {
