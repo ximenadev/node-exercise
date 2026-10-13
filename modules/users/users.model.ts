@@ -2,7 +2,13 @@ import mongoose, { HydratedDocument, Model, Query } from 'mongoose';
 import validator from 'validator';
 import bcrypt from 'bcryptjs';
 import crypto from 'node:crypto';
-import { PASSWORD_MIN_LENGTH, ROLES, type Role } from './users.constants';
+import { imageUrl } from '../../utils/cloudinary';
+import {
+  DEFAULT_USER_PHOTO_ID,
+  PASSWORD_MIN_LENGTH,
+  ROLES,
+  type Role,
+} from './users.constants';
 
 export interface IUser {
   name: string;
@@ -69,7 +75,7 @@ const usersSchema = new mongoose.Schema<IUser, UserModel, IUserMethods>({
   },
   photo: {
     type: String,
-    default: 'default.jpg',
+    default: () => imageUrl(DEFAULT_USER_PHOTO_ID),
   },
   passwordChangedAt: Date,
   passwordResetToken: String,

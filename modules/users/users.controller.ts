@@ -1,5 +1,10 @@
 import { catchAsync, factory, validateBody } from '../../utils';
-import { forbidPasswordUpdate, setMeId } from './users.middleware';
+import {
+  forbidPasswordUpdate,
+  saveUserPhoto,
+  setMeId,
+  uploadUserPhoto,
+} from './users.middleware';
 import { updateMeSchema, updateUserSchema } from './users.schemas';
 import User from './users.model';
 
@@ -25,8 +30,10 @@ export const getUser = factory.getOne(User);
 export const getMe = [setMeId, getUser];
 
 export const updateMe = [
+  uploadUserPhoto,
   forbidPasswordUpdate,
   validateBody(updateMeSchema),
+  saveUserPhoto,
   setMeId,
   factory.updateOne(User),
 ];

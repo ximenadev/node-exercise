@@ -37,7 +37,6 @@ app.use('/api', apiLimiter);
 
 app.use(express.json());
 app.use(cookieParser());
-app.use(express.static('public'));
 
 app.use((req, res, next) => {
   req.requestTime = new Date().toISOString();

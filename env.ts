@@ -16,6 +16,7 @@ const required = [
   'EMAIL_USERNAME',
   'EMAIL_PASSWORD',
   'BASE_URL',
+  'CLOUDINARY_URL',
 ] as const;
 const missing = required.filter(key => !process.env[key]);
 

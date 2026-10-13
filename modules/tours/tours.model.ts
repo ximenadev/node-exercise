@@ -217,10 +217,6 @@ tourSchema.pre('save', function () {
   this.slug = slugify(this.name, { lower: true });
 });
 
-// tourSchema.post('save', function (doc: { slug?: string; name: string }) {
-//   console.log(doc);
-// });
-
 // QUERY MIDDLEWARE
 tourSchema.pre(
   /^find/,
